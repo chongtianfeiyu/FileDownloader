@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="HandlerLeak">
+        <ignore path="src/com/changhong/downloader/activitys/DownloadTestActivity.java" />
+    </issue>
+    <issue id="SimpleDateFormat">
+        <ignore path="src/com/changhong/download/Downloader.java" />
+        <ignore path="src/com/changhong/download/oldhandler/Downloader.java" />
+        <ignore path="src/com/changhong/downloader/activitys/DownloadTestActivity.java" />
+        <ignore path="src/com/changhong/transfer/FileTransfer.java" />
+    </issue>
+</lint>
