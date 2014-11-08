@@ -63,7 +63,6 @@ public class RequestProvider {
 	}
 	
 	private String getErrorMessage(HttpURLConnection conn){
-		// 连接失败但服务器仍然发送了有用数据，则返回错误流.
 		BufferedReader breader = null;
 		StringBuilder sb = new StringBuilder();
 		String line = "";
@@ -118,19 +117,21 @@ public class RequestProvider {
 			        	accessFile.write(download,0,downloadedSize);
 			        	accessFile.close();
 		        	}
-		        	handler.onDownloadCompleted(threadId + ":" + downloadedSize);
 		        }
 			}else{
 				handler.onDownloadError(new IOException(getErrorMessage(conn)));
+	        	handler.onDownloadCompleted("ERROR:thread information,NOT FOUND");
 			}
 		} catch(IOException e){
 			handler.onDownloadError(e);
-//        	handler.onDownloadCompleted("ERROR:thread information");
+        	handler.onDownloadCompleted("ERROR:thread information");
 		} finally{
 			closeStream(inputStream);
 			closeStream(accessFile);
 			conn.disconnect();
-//        	handler.onDownloadCompleted("thread information");
+			// 最后将下载状态（不管成功还是失败，记录在一个xml元素中或者是xml元素文本中）传递给出去进行汇总
+			//（每一个子线程完成后统计总情况，所有完成则完成，还在进行则继续，有下载失败的也要提醒用户，让用户触发继续下载）
+        	handler.onDownloadCompleted(threadId + ":" + downloadedSize);
 		}
 	}
 }

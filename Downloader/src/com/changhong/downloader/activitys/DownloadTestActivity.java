@@ -11,12 +11,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-
-import com.changhong.asynctransfer.AsyncDownloadHandler;
-import com.changhong.asynctransfer.DownloadHandler;
 import com.changhong.asynctransfer.FileDownloader;
 import com.changhong.downloader.R;
-import com.changhong.transfer.DefaultDownloadHandler;
 import com.changhong.transfer.DefaultFilelistHandler;
 import com.changhong.transfer.DefaultUploadHandler;
 import com.changhong.transfer.FileTransfer;
