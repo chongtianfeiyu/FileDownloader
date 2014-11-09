@@ -11,6 +11,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class RequestProvider {
 	
 	private String url;
@@ -82,8 +85,19 @@ public class RequestProvider {
 		return code + ":" + breader.toString();
 	}
 	
-	protected void get(int threadId,File file,int startPosition,int endPosition,
-			AsyncDownloadHandler handler){
+	private void setResult(Document doc,int threadId,int start,int end,int loaded,String state){
+		Element root = doc.getDocumentElement();
+		Element e = doc.createElement("part");
+		e.setAttribute("id", String.valueOf(threadId));
+		e.setAttribute("startPosition", String.valueOf(start));
+		e.setAttribute("endPosition", String.valueOf(end));
+		e.setAttribute("downloadedSize", String.valueOf(loaded));
+		e.setAttribute("state", state);
+		root.appendChild(e);
+	}
+	
+	protected void get(int threadId,File file,int startPosition,int endPosition,Document doc,
+			DownloadHandler handler){
 		if(handler == null){
 			return ;
 		}
@@ -94,6 +108,7 @@ public class RequestProvider {
 		RandomAccessFile accessFile = null;
 		BufferedInputStream inputStream = null;
         int downloadedSize = 0;
+        String state = "";
 		try{
 			conn.setRequestProperty("Range", "bytes="+startPosition+"-"+endPosition);
 			conn.connect();
@@ -116,22 +131,26 @@ public class RequestProvider {
 						accessFile.seek(startPosition);
 			        	accessFile.write(download,0,downloadedSize);
 			        	accessFile.close();
+			        	state = "Completed";
+			        	setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
 		        	}
 		        }
 			}else{
 				handler.onDownloadError(new IOException(getErrorMessage(conn)));
-	        	handler.onDownloadCompleted("ERROR:thread information,NOT FOUND");
+				state = "ERROR";
+				setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
+				handler.onDownloadCompleted(doc);
 			}
 		} catch(IOException e){
 			handler.onDownloadError(e);
-        	handler.onDownloadCompleted("ERROR:thread information");
+			state = "ERROR";
+			setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
 		} finally{
 			closeStream(inputStream);
 			closeStream(accessFile);
 			conn.disconnect();
-			// 最后将下载状态（不管成功还是失败，记录在一个xml元素中或者是xml元素文本中）传递给出去进行汇总
-			//（每一个子线程完成后统计总情况，所有完成则完成，还在进行则继续，有下载失败的也要提醒用户，让用户触发继续下载）
-        	handler.onDownloadCompleted(threadId + ":" + downloadedSize);
+        	handler.onDownloadCompleted(doc);
 		}
 	}
+	
 }

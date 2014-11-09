@@ -10,16 +10,22 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import android.util.Log;
 
 public class FileDownloader {
 
+	private Document document;
 	private List<DownloadThread> threads = new ArrayList<DownloadThread>();
 	private int fileSize;
 	private Object locker;
 	private int threadCount;
 	private ThreadExecutor excutor = ThreadExecutor.defaultInstance();
+	
 	public static int[] downloadedsSize;
+	
 	
 	public FileDownloader(int threadCount){
 		this.threadCount = threadCount;
@@ -28,6 +34,7 @@ public class FileDownloader {
 		for(int i = 0; i < threadCount; i++){
 			downloadedsSize[i] = 0;
 		}
+		document = XMLHelper.createDocument();
 	}
 	
 	private Future<String> getDownloadThreads(final String urlstr,final File file) throws IOException{
@@ -53,8 +60,8 @@ public class FileDownloader {
 					}else{
 						endPosition = (id + 1) * blockSize - 1;	
 					}
-					AsyncDownloadHandler handler = new DownloadHandler();
-					DownloadThread thread = new DownloadThread(urlstr,file,id,
+					DownloadHandler handler = new DownloadHandler();
+					DownloadThread thread = new DownloadThread(urlstr,file,document,id,
 							startPosition,endPosition,locker,handler);
 					threads.add(thread);
 				}
@@ -70,6 +77,12 @@ public class FileDownloader {
 	 * @throws IOException 
 	 */
 	public void download(String urlstr,File file) throws IOException{
+		// 创建根元素
+		Element root = document.createElement("file");
+		root.setAttribute("fileName", file.getName());
+		root.setAttribute("url", urlstr);
+		document.appendChild(root);
+		
 		Future<String> w = getDownloadThreads(urlstr,file);
 		try {
 			Log.e("GetFileSize:", w.get());

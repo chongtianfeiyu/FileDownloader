@@ -2,7 +2,7 @@ package com.changhong.asynctransfer;
 
 public abstract class AsyncDownloadHandler {
 	
-	public abstract void onDownloading(int[] loadedsSize);
+	public abstract void onDownloading(int loadedsSize);
 	
 	public abstract void onDownloadError(Exception e);
 	
