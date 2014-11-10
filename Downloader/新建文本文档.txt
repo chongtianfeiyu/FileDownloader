@@ -1,170 +1,56 @@
-public void asyncGet(String urlstr,File file,int threadID,int threadNumber){
-		int fileSize = 0;
-		int blockSize = 0;
-		int startPosition = 0; 
-		int endPosition = 0;
-		int littleMore = 0;
-		try {
-			RandomAccessFile accessFile = new RandomAccessFile(file,"rwd"); // 在本地创建一个文件
-			URL url = new URL(urlstr);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    		conn.setConnectTimeout(5000);
-    		conn.setRequestMethod("GET");
-    		conn.setRequestProperty("Range", "bytes="+startPosition+"-"+endPosition);
-    		if(conn.getResponseCode() == 200){ 
-    			fileSize = conn.getContentLength();
-    			littleMore = fileSize % threadNumber;
-    			blockSize = fileSize / threadNumber;
-    			startPosition = threadID * blockSize;
-    			if(littleMore > 0 && threadID == (threadNumber - 1)){
-    			    endPosition = (threadID + 1) * blockSize + littleMore -1;
-    			}else{
-    			    endPosition = (threadID + 1) * blockSize -1;
-    			}
-    			accessFile.seek(startPosition);
-    			BufferedInputStream bs = new BufferedInputStream(conn.getInputStream());
-    	        byte[] buffer = new byte[1024];
-    	        int len=0;
-    	        int downloadSize = 0;
-    	        while((len = bs.read(buffer,0,buffer.length))!=-1 && !cancel){
-    	            accessFile.write(buffer,0,len);
-    	            downloadSize += len;
-    	            handler.onDownloading(conn.getContentLength(), downloadSize);
-    	        }if(!cancel){
-        	        accessFile.close();
-        	        bs.close();
-        	        handler.onDownloadCompleted(file);
-        	        Log.e("Downloaded","线程"+String.valueOf(threadID)+"下载完成");
-    	        }else{
-    	        	accessFile.close();
-         	        bs.close();
-         	        handler.onCancel(file);
-    	        }
-    		}
-		} catch (FileNotFoundException e) {
+	protected void get(int threadId,File file,int startPosition,int endPosition,Document doc,
+			DownloadHandler handler){
+		if(handler == null){
+			return ;
+		}
+		HttpURLConnection conn = httpGetConnection(url);
+		if(conn == null){
+			handler.onDownloadError(new NullPointerException("无效的连接！"));
+		}
+		RandomAccessFile accessFile = null;
+		BufferedInputStream inputStream = null;
+        int downloadedSize = 0;
+        String state = "";
+		try{
+			conn.setRequestProperty("Range", "bytes="+startPosition+"-"+endPosition);
+			conn.connect();
+			int code = conn.getResponseCode();
+			if(code == 206){
+		        byte[] buffer = new byte[bufferSize];
+		        byte[] download = new byte[endPosition - startPosition + 1]; 
+		        inputStream = new BufferedInputStream(conn.getInputStream());
+		        int readLength = 0;
+		        while((readLength = inputStream.read(buffer)) != -1 && !cancel){
+		        	System.arraycopy(buffer, 0, download, downloadedSize, readLength);
+		        	downloadedSize += readLength;
+		        	FileDownloader.downloadedsSize[threadId] = downloadedSize;
+		        	handler.onDownloading(FileDownloader.downloadedsSize);
+		        }if(cancel){
+		        	handler.onDownloadCancel();
+		        }else{
+		        	synchronized(locker){
+						accessFile = new RandomAccessFile(file,"rwd");
+						accessFile.seek(startPosition);
+			        	accessFile.write(download,0,downloadedSize);
+			        	accessFile.close();
+			        	state = "Completed";
+			        	setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
+		        	}
+		        }
+			}else{
+				handler.onDownloadError(new IOException(getErrorMessage(conn)));
+				state = "ERROR";
+				setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
+				handler.onDownloadCompleted(doc);
+			}
+		} catch(IOException e){
 			handler.onDownloadError(e);
-		} catch (IOException e) {
-			handler.onDownloadError(e);
+			state = "ERROR";
+			setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
+		} finally{
+			closeStream(inputStream);
+			closeStream(accessFile);
+			conn.disconnect();
+        	handler.onDownloadCompleted(doc);
 		}
 	}
-	
-	/**
-	 * 
-	 * @param urlstr
-	 * @param file
-	 * @param threadID
-	 * @param threadNumber
-	 */
-	public void asyncGet2(String urlstr,File file,int blockCount){
-		int fileSize = 0;
-		int blockSize = 0;
-		int startPosition = 0; 
-		int endPosition = 0;
-		int littleMore = 0;
-		try {
-			RandomAccessFile accessFile = new RandomAccessFile(file,"rwd"); // 在本地创建一个文件
-			URL url = new URL(urlstr);
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    		conn.setConnectTimeout(5000);
-    		conn.setRequestMethod("GET");
-    		conn.setRequestProperty("Range", "bytes="+startPosition+"-"+endPosition);
-    		if(conn.getResponseCode() == 200){ 
-    			fileSize = conn.getContentLength();
-    			littleMore = fileSize % blockCount;
-    			blockSize = fileSize / blockCount;
-    			
-    			for(int i = 0; i < blockCount; i++){
-    				startPosition = i * blockSize;
-        			if(littleMore > 0 && i == (blockCount - 1)){
-        			    endPosition = (i + 1) * blockSize + littleMore -1;
-        			}else{
-        			    endPosition = (i + 1) * blockSize -1;
-        			}
-        			accessFile.seek(startPosition);
-        			BufferedInputStream bs = new BufferedInputStream(conn.getInputStream());
-        	        byte[] buffer = new byte[1024];
-        	        int len=0;
-        	        int downloadSize = 0;
-        	        while((len = bs.read(buffer,0,buffer.length))!=-1 && !cancel){
-        	            accessFile.write(buffer,0,len);
-        	            downloadSize += len;
-        	            handler.onDownloading(conn.getContentLength(), downloadSize);
-        	        }if(!cancel){
-            	        accessFile.close();
-            	        bs.close();
-            	        handler.onDownloadCompleted(file);
-        	        }else{
-        	        	accessFile.close();
-             	        bs.close();
-             	        handler.onCancel(file);
-        	        }
-    			}
-    		}
-		} catch (FileNotFoundException e) {
-			handler.onDownloadError(e);
-		} catch (IOException e) {
-			handler.onDownloadError(e);
-		}
-	}
-	private void getStream(int startPosition,int blockNum,
-			HttpURLConnection conn,RandomAccessFile accessFile) throws IOException{
-		accessFile.seek(startPosition);
-		 byte[] buffer = new byte[1024];
-	        int len=0;
-	        int downloadSize = 0;
-			BufferedInputStream bs = new BufferedInputStream(conn.getInputStream());
-	        while((len = bs.read(buffer,0,buffer.length))!=-1 && !cancel){
-	            accessFile.write(buffer,0,len);
-	            downloadSize += len;
-	            handler.onDownloading(conn.getContentLength(), downloadSize);
-	        }if(!cancel){
- 	            accessFile.close();
- 	            bs.close();
-	        }else{
-	        	accessFile.close();
-  	            bs.close();
-	       }
-	}
-
-
-////////////////////////////////////////////////////////////////////////////
-	private class DownloadThread implements Runnable{
-		
-		private int threadId;
-		private int threadNumber;
-		private String urlstr;
-		private File file;
-		
-		public DownloadThread(int id,int number,String urlstr,File file){
-			this.threadId = id;
-			this.threadNumber = number;
-			this.urlstr = urlstr;
-			this.file = file;
-		}
-		
-		@Override
-		public void run() {
-			HttpRequestProvider http = new HttpRequestProvider(handler);
-			this.file = getFile(path,filename);
-			http.asyncGet(urlstr, file,threadId,threadNumber);
-		}
-	}
-
-	
-	public void asyncDownload(final String urlstr,int threadNumber){
-		file = getFile(path,filename);
-		for(int i = 0; i < threadNumber; i++){
-			executor.doTask(new DownloadThread(i,threadNumber,urlstr,file));
-		}
-	}
-	
-	//////////////////////////////////////////
-					String charset = conn.getHeaderField("charset");
-				Log.e("filelist",charset == null?"null Encoding":charset);
-				Map<String,List<String>> h = conn.getHeaderFields();
-				for(String s:h.keySet()){
-					List<String> list = h.get(s);
-					for(String ss:list){
-						Log.e("HeaderFields",s + ":" +ss);
-					}
-				}

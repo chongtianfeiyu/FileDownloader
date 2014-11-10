@@ -44,7 +44,7 @@ public class XMLHelper {
 	 * @param fileName 保存位置和文件名/path/.../file.xml
 	 * @throws TransformerException
 	 */
-	public void saveDocument(Document document,String fileName) throws TransformerException{
+	public static void saveDocument(Document document,String fileName) throws TransformerException{
 		//创建Transformer对象，它的作用是将Document对象以流的方式输出
 	    TransformerFactory tFactory = TransformerFactory.newInstance();
 	    Transformer transformer = tFactory.newTransformer();

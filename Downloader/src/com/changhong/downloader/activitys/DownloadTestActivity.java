@@ -5,12 +5,18 @@ import java.io.IOException;
 import java.util.Date;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
 import com.changhong.asynctransfer.FileDownloader;
 import com.changhong.downloader.R;
 import com.changhong.transfer.DefaultFilelistHandler;
@@ -25,6 +31,7 @@ public class DownloadTestActivity extends Activity implements OnClickListener{
 	private Button download_btn;
 	private Button upload_btn;
 	private Button filelist_btn;
+	private Button location_btn;
 	private EditText file_log_txt;
 	private ViewHandler viewHandler;
 	
@@ -34,6 +41,7 @@ public class DownloadTestActivity extends Activity implements OnClickListener{
 		setContentView(R.layout.activity_downloadtest);
 		initView();
 	}
+	
 	private void initView() {
 		download_btn = (Button)findViewById(R.id.activity_downloadtest_action_download);
 		download_btn.setOnClickListener(this);
@@ -41,8 +49,12 @@ public class DownloadTestActivity extends Activity implements OnClickListener{
 		upload_btn.setOnClickListener(this);
 		filelist_btn = (Button)findViewById(R.id.activity_downloadtest_action_filelist);
 		filelist_btn.setOnClickListener(this);
+		location_btn = (Button)findViewById(R.id.activity_downloadtest_action_location);
+		location_btn.setOnClickListener(this);
 		file_log_txt = (EditText)findViewById(R.id.activity_downloadtest_input_file_log);
 		viewHandler = new ViewHandler(file_log_txt);
+		
+		
 	}
 	
 	@Override
@@ -57,16 +69,24 @@ public class DownloadTestActivity extends Activity implements OnClickListener{
 		case R.id.activity_downloadtest_action_filelist:
 			filelist();
 			break;
+		case R.id.activity_downloadtest_action_location:
+			location();
+			break;
 		default:break;
 		}
 	}
 	
+	private void location() {
+		Intent i = new Intent(this,LocationActivity.class);
+		startActivity(i);
+	}
 	private void filelist() {
 		String url = "http://10.9.52.99:10000/list";
 		FileListHandler handler = new DefaultFilelistHandler(viewHandler);
 		FileTransfer loader = new FileTransfer();
 		loader.asyncFielist(url,handler);
 	}
+	
 	private void upload() {
 		String path = Environment.getExternalStorageDirectory().getPath()+"/Changhong/Download/";
 		String filename = "tutu3.jpg"; // 文件名
@@ -87,8 +107,8 @@ public class DownloadTestActivity extends Activity implements OnClickListener{
 //		loader.cancelDownload(); // 取消下载
 		///////////////////////// 多线程下载测试 2014.11.08//////////////////////////
 		String path = Environment.getExternalStorageDirectory().getPath()+"/Changhong/Download/";
-		String filename = "ccc.gif"; // 文件名
-		String urlstr = "http://c.hiphotos.baidu.com/image/pic/item/dcc451da81cb39dbf49ac758d3160924ab183061.jpg";
+		String filename = "小猫.txt"; // 文件名
+		String urlstr = "http://www.oschina.net/question/tag/google-json?show=time";
 		File file = setDownloadFile(path,filename);
 		FileDownloader downloader = new FileDownloader(5);
 		try {

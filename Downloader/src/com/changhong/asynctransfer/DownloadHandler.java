@@ -1,5 +1,7 @@
 package com.changhong.asynctransfer;
 
+import javax.xml.transform.TransformerException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -50,7 +52,36 @@ public final class DownloadHandler{
 	}
 
 	public void onDownloadCompleted(Document doc) {
+		printResult(doc);
 		Element root = doc.getDocumentElement();
+		String threadCount = root.getAttribute("threadCount");
+		NodeList parts = root.getChildNodes();
+		if(parts.getLength() == Integer.valueOf(threadCount)){
+			for(int i = 0; i < parts.getLength(); i++){
+				if(!((Element)parts.item(i)).getAttribute("state").equals("Completed")){
+					// 有任务未完成，将下载状态写入本地文件
+					String fileName = root.getAttribute("fileName") + ".xml";
+					try {
+						XMLHelper.saveDocument(doc, fileName);
+					} catch (TransformerException e) {
+						if(userHandler != null){
+							// 如果写入本地出错则不管了，或者可以报告下载失败onDownloadCompleted(String)
+							userHandler.onDownloadError(e); 
+						}
+						e.printStackTrace();
+					}
+					if(userHandler != null){
+						userHandler.onDownloadCompleted("");
+					}
+					break;
+				}
+			}
+		}
+	}
+	
+	private void printResult(Document doc){
+		Element root = doc.getDocumentElement();
+		Log.e("FileName", root.getAttribute("fileName"));
 		NodeList list = root.getChildNodes();
 		if(list  == null || list.getLength() == 0){
 			Log.e("Completed", "怎么可能，Document为空！");

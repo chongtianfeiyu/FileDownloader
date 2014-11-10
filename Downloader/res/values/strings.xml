@@ -8,5 +8,6 @@
     <string name="activity_downloadtest_label_upload">点击上传</string>
     <string name="activity_downloadtest_label_default">LOG</string>
     <string name="activity_downloadtest_label_filelist">文件列表</string>
+    <string name="activity_downloadtest_label_location">打开百度地图</string>
     
 </resources>

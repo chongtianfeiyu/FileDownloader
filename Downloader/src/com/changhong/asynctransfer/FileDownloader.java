@@ -79,8 +79,9 @@ public class FileDownloader {
 	public void download(String urlstr,File file) throws IOException{
 		// 创建根元素
 		Element root = document.createElement("file");
-		root.setAttribute("fileName", file.getName());
+		root.setAttribute("fileName", file.getPath());
 		root.setAttribute("url", urlstr);
+		root.setAttribute("threadCount", String.valueOf(this.threadCount));
 		document.appendChild(root);
 		
 		Future<String> w = getDownloadThreads(urlstr,file);

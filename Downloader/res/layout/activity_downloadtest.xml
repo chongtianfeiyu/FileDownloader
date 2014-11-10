@@ -21,6 +21,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/activity_downloadtest_label_filelist" />
+    <Button
+        android:id="@+id/activity_downloadtest_action_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/activity_downloadtest_label_location" />
 
     <EditText
         android:id="@+id/activity_downloadtest_input_file_log"

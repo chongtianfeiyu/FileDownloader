@@ -108,47 +108,41 @@ public class RequestProvider {
 		RandomAccessFile accessFile = null;
 		BufferedInputStream inputStream = null;
         int downloadedSize = 0;
-        String state = "";
+        String state = "Completed"; // 如果不出错误则表示下载成功
 		try{
 			conn.setRequestProperty("Range", "bytes="+startPosition+"-"+endPosition);
 			conn.connect();
 			int code = conn.getResponseCode();
 			if(code == 206){
+				accessFile = new RandomAccessFile(file,"rwd");
+				accessFile.seek(startPosition);
 		        byte[] buffer = new byte[bufferSize];
-		        byte[] download = new byte[endPosition - startPosition + 1]; 
 		        inputStream = new BufferedInputStream(conn.getInputStream());
 		        int readLength = 0;
 		        while((readLength = inputStream.read(buffer)) != -1 && !cancel){
-		        	System.arraycopy(buffer, 0, download, downloadedSize, readLength);
+		        	synchronized(locker){
+			        	accessFile.write(buffer,0,readLength);
+		        	}
 		        	downloadedSize += readLength;
 		        	FileDownloader.downloadedsSize[threadId] = downloadedSize;
 		        	handler.onDownloading(FileDownloader.downloadedsSize);
 		        }if(cancel){
 		        	handler.onDownloadCancel();
-		        }else{
-		        	synchronized(locker){
-						accessFile = new RandomAccessFile(file,"rwd");
-						accessFile.seek(startPosition);
-			        	accessFile.write(download,0,downloadedSize);
-			        	accessFile.close();
-			        	state = "Completed";
-			        	setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
-		        	}
 		        }
 			}else{
 				handler.onDownloadError(new IOException(getErrorMessage(conn)));
 				state = "ERROR";
-				setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
 				handler.onDownloadCompleted(doc);
 			}
 		} catch(IOException e){
 			handler.onDownloadError(e);
 			state = "ERROR";
-			setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
 		} finally{
+		    // 不管成功还是失败，将本线程下载结果记录下来
 			closeStream(inputStream);
 			closeStream(accessFile);
 			conn.disconnect();
+			setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
         	handler.onDownloadCompleted(doc);
 		}
 	}
