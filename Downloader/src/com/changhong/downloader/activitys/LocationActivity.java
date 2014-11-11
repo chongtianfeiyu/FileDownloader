@@ -72,10 +72,12 @@ public class LocationActivity extends Activity{
 				LatLng ll = new LatLng(location.getLatitude(),location.getLongitude());
 				MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
 				mBaiduMap.animateMapStatus(u);
+				mMapView.set
 			}
 		}
 
 		public void onReceivePoi(BDLocation poiLocation) {
+			
 		}
     }
 }
