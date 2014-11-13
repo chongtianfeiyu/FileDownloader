@@ -59,13 +59,11 @@ public final class DownloadHandler{
 		if(parts.getLength() == Integer.valueOf(threadCount)){
 			for(int i = 0; i < parts.getLength(); i++){
 				if(!((Element)parts.item(i)).getAttribute("state").equals("Completed")){
-					// 有任务未完成，将下载状态写入本地文件
 					String fileName = root.getAttribute("fileName") + ".xml";
 					try {
 						XMLHelper.saveDocument(doc, fileName);
 					} catch (TransformerException e) {
 						if(userHandler != null){
-							// 如果写入本地出错则不管了，或者可以报告下载失败onDownloadCompleted(String)
 							userHandler.onDownloadError(e); 
 						}
 						e.printStackTrace();

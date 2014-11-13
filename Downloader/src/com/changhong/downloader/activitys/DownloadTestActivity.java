@@ -18,6 +18,7 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.changhong.asynctransfer.FileDownloader;
+import com.changhong.crazydog.location.LocationActivity;
 import com.changhong.downloader.R;
 import com.changhong.transfer.DefaultFilelistHandler;
 import com.changhong.transfer.DefaultUploadHandler;

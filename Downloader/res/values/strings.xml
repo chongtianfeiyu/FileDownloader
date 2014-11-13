@@ -9,5 +9,10 @@
     <string name="activity_downloadtest_label_default">LOG</string>
     <string name="activity_downloadtest_label_filelist">文件列表</string>
     <string name="activity_downloadtest_label_location">打开百度地图</string>
+    <string name="activity_location_label_search">search</string>
+    <string name="activity_location_label_display">显示</string>
+    <string name="activity_location_label_nearby">附近</string>
+    <string name="activity_location_label_navigation">导航</string>
+    <string name="activity_location_label_spatial">量算</string>
     
 </resources>

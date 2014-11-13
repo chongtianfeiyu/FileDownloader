@@ -132,7 +132,6 @@ public class RequestProvider {
 			}else{
 				handler.onDownloadError(new IOException(getErrorMessage(conn)));
 				state = "ERROR";
-				handler.onDownloadCompleted(doc);
 			}
 		} catch(IOException e){
 			handler.onDownloadError(e);
@@ -142,8 +141,10 @@ public class RequestProvider {
 			closeStream(inputStream);
 			closeStream(accessFile);
 			conn.disconnect();
-			setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
-        	handler.onDownloadCompleted(doc);
+			synchronized(locker){ // 写任务完成状态，因为是共享一个Document所以应该同步，且每个线程结束后要检查是否完成，所以complete要同步
+				setResult(doc,threadId,startPosition,endPosition,downloadedSize,state);
+	        	handler.onDownloadCompleted(doc);	
+			}
 		}
 	}
 	

@@ -4,10 +4,77 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <com.baidu.mapapi.map.MapView  
-        android:id="@+id/bmapView"  
-        android:layout_width="fill_parent"  
-        android:layout_height="fill_parent"  
-        android:clickable="true" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <com.baidu.mapapi.map.MapView  
+            android:id="@+id/bmapView"  
+            android:layout_width="fill_parent"  
+            android:layout_height="fill_parent"  
+            android:clickable="true" />
+        <LinearLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/activity_location_input_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="50dp"
+                android:layout_weight="1"
+                android:ems="10" >
+
+                <requestFocus />
+            </EditText>
+
+            <Button
+                android:id="@+id/activity_location_action_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/activity_location_label_search" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/activity_location_action_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="@string/activity_location_label_display" />
+
+            <Button
+                android:id="@+id/activity_location_action_nearby"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="@string/activity_location_label_nearby" />
+
+            <Button
+                android:id="@+id/activity_location_action_spatial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="@string/activity_location_label_spatial" />
+
+            <Button
+                android:id="@+id/activity_location_action_navigation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:text="@string/activity_location_label_navigation" />
+        </LinearLayout>
+
+    </FrameLayout>
+
 
 </LinearLayout>
